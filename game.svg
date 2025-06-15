@@ -1,0 +1,23 @@
+<svg width="360" height="320" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <circle class="frame" cx="50" cy="50" r="48" stroke="green" stroke-width="2" fill="black" />
+    <circle class="cursor" cx="50" cy="50" r="6" stroke="black" stroke-width="2" fill="green" />
+    
+    <!-- Container für alle Trail-Spuren -->
+    <g class="trail-container">
+        <!-- Aktuelle Ballspur -->
+        <path class="ball-trail" d="" stroke="green" stroke-width="1" fill="none" opacity="0.5" />
+    </g>
+    <!-- Ball als Kreis -->
+    <circle class="ball" cx="30" cy="30" r="3" stroke="black" stroke-width="0" fill="greenyellow" />
+
+    <!-- paddleA als Kreisbogen (z.B. 90 Grad Segment) -->
+    <path class="paddleA" d="M 95 50 A 45 45 0 0 1 50 95" stroke="lightgreen" stroke-width="2" fill="none" />
+    <!-- Rote Enden für paddleA -->
+    <path class="paddleA-end1" d="" stroke="darkred" stroke-width="4" fill="none" />
+    <path class="paddleA-end2" d="" stroke="darkred" stroke-width="4" fill="none" />
+    
+    <path class="paddleB" d="M 5 50 A 45 45 0 0 1 50 5" stroke="greenyellow " stroke-width="2" fill="none" />
+    <!-- Rote Enden für paddleB -->
+    <path class="paddleB-end1" d="" stroke="darkblue" stroke-width="4" fill="none" />
+    <path class="paddleB-end2" d="" stroke="darkblue" stroke-width="4" fill="none" />
+</svg>
