@@ -40,7 +40,6 @@ body {
     justify-content: space-between;
     align-items: center;
     width: 80%;
-    height: 10%;
     font-size: 48px;
     text-align: center;
 }
@@ -51,9 +50,10 @@ body {
     font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
 }
 
-.starter, .score {
+.starter, .score, .info {
     font-size: 16px;
     color: var(--green);
+    
 }
 
 .paddleA {

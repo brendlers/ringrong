@@ -22,6 +22,7 @@ fetch('game.svg')
                 <div class="starter">Start</div>
                 <div class="playerScoreB paddleB">5</div>
             </div>
+            <div class="info">Press S to save image - Press P to pause</div>
         `;
         
         container.innerHTML = titleHTML + svgContent + hudHTML;
