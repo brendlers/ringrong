@@ -2,6 +2,9 @@
 
 Ein dynamisches Browser-Spiel mit kreisförmigen Paddles, Ballphysik und Trail-Visualisierung.
 
+[Hier probieren!](https://brendlers.github.io/ringrong/)
+
+
 ## 🎯 Spielprinzip
 
 Ring Rong ist ein einzigartiges Pong-ähnliches Spiel, das in einem Kreis gespielt wird:

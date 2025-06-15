@@ -19,7 +19,7 @@ fetch('game.svg')
         const hudHTML = `
             <div class="hud">
                 <div class="playerScoreA paddleA">5</div>
-                <div class="starter">Start</div>
+                <div class="starter">Click on image to Start</div>
                 <div class="playerScoreB paddleB">5</div>
             </div>
             <div class="info">Press S to save image - Press P to pause</div>
