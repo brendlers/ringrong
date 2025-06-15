@@ -172,16 +172,17 @@ function duplicateCurrentTrail() {
     let mouseOver = false;
     let target = { x: 50, y: 50 };
     let pos = { x: 50, y: 50 };
-    let animFrame;
-
-    function svgCoords(evt) {
+    let animFrame;    function svgCoords(evt) {
         const rect = svg.getBoundingClientRect();
-        const x = ((evt.clientX - rect.left) / rect.width) * bbox.width;
-        const y = ((evt.clientY - rect.top) / rect.height) * bbox.height;
+        // Touch oder Mouse Event behandeln
+        const clientX = evt.touches ? evt.touches[0].clientX : evt.clientX;
+        const clientY = evt.touches ? evt.touches[0].clientY : evt.clientY;
+        const x = ((clientX - rect.left) / rect.width) * bbox.width;
+        const y = ((clientY - rect.top) / rect.height) * bbox.height;
         return { x, y };
     }
-    
-    svg.addEventListener('mousemove', (evt) => {
+
+    function handlePointerMove(evt) {
         mouseOver = true;
         target = svgCoords(evt);
         moveCursor();
@@ -197,8 +198,29 @@ function duplicateCurrentTrail() {
         const arcB = playerB * 10;
         drawPaddleWithEnds(50, 50, 45, startA, arcA, 'paddleA');
         drawPaddleWithEnds(50, 50, 42, startB, arcB, 'paddleB');
+    }
+    
+    // Mouse Events
+    svg.addEventListener('mousemove', handlePointerMove);
+      // Touch Events
+    svg.addEventListener('touchmove', (evt) => {
+        evt.preventDefault(); // Verhindert Scrolling
+        handlePointerMove(evt);
     });
     
+    svg.addEventListener('touchstart', (evt) => {
+        evt.preventDefault();
+        mouseOver = true;
+        handlePointerMove(evt);
+    });
+    
+    svg.addEventListener('touchend', (evt) => {
+        evt.preventDefault();
+        mouseOver = false;
+        animateToCenter();
+    });
+    
+    // Mouse Events  
     svg.addEventListener('mouseleave', () => {
         mouseOver = false;
         animateToCenter();
@@ -237,29 +259,8 @@ function duplicateCurrentTrail() {
 
 // Start-Button und SVG-Klick Events - werden nach SVG-Loading gesetzt
 // Start-Button Event
-document.querySelector('.starter').addEventListener('click', function() {
-    if (!gameRunning && !gameEnded) {
-        gameRunning = true;
-        this.textContent = 'Running...';
-        this.style.pointerEvents = 'none';
-    } else if (gameEnded) {
-        // Spiel neustarten - Trail duplizieren
-        duplicateCurrentTrail();
-        playerA = 5;
-        playerB = 5;
-        gameRunning = true;
-        gameEnded = false;
-        this.textContent = 'Running...';
-        this.style.pointerEvents = 'none';
-        // Ball zurücksetzen
-        document.querySelector('.ball').setAttribute('cx', 50);
-        document.querySelector('.ball').setAttribute('cy', 50);
-        trail = []; // Trail-Array explizit leeren
-    }
-});
-
-// SVG-Klick Event zum Starten/Neustarten
-document.querySelector('.window svg').addEventListener('click', function() {
+// Universelle Funktion für Start-Button Click/Touch
+function handleStarterInteraction() {
     const starter = document.querySelector('.starter');
     if (!gameRunning && !gameEnded) {
         gameRunning = true;
@@ -279,6 +280,44 @@ document.querySelector('.window svg').addEventListener('click', function() {
         document.querySelector('.ball').setAttribute('cy', 50);
         trail = []; // Trail-Array explizit leeren
     }
+}
+
+// Start-Button Events (Click und Touch)
+document.querySelector('.starter').addEventListener('click', handleStarterInteraction);
+document.querySelector('.starter').addEventListener('touchend', function(evt) {
+    evt.preventDefault();
+    handleStarterInteraction();
+});
+
+// SVG-Klick Event zum Starten/Neustarten
+// Universelle Funktion für SVG Click/Touch
+function handleSVGInteraction() {
+    const starter = document.querySelector('.starter');
+    if (!gameRunning && !gameEnded) {
+        gameRunning = true;
+        starter.textContent = 'Running...';
+        starter.style.pointerEvents = 'none';
+    } else if (gameEnded) {
+        // Spiel neustarten - Trail duplizieren
+        duplicateCurrentTrail();
+        playerA = 5;
+        playerB = 5;
+        gameRunning = true;
+        gameEnded = false;
+        starter.textContent = 'Running...';
+        starter.style.pointerEvents = 'none';
+        // Ball zurücksetzen
+        document.querySelector('.ball').setAttribute('cx', 50);
+        document.querySelector('.ball').setAttribute('cy', 50);
+        trail = []; // Trail-Array explizit leeren
+    }
+}
+
+// Click und Touch Events für SVG
+document.querySelector('.window svg').addEventListener('click', handleSVGInteraction);
+document.querySelector('.window svg').addEventListener('touchend', function(evt) {
+    evt.preventDefault();
+    handleSVGInteraction();
 });
 
 // Ball-Logik: Bewegung, Kollision
