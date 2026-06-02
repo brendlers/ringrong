@@ -20,17 +20,36 @@ Ring Rong ist ein einzigartiges Pong-ähnliches Spiel, das in einem Kreis gespie
 - **Mausbewegung**: Steuert die Position beider Paddles
   - **X-Achse**: Bestimmt den Startwinkel von Paddle A
   - **Y-Achse**: Bestimmt den Startwinkel von Paddle B
-- **Klick ins SVG**: Spiel starten/neustarten oder Pause ein/aus
+- **Klick ins SVG**: Spiel starten/neustarten
 
 ### **Tastatur-Steuerung**
-| Taste | Funktion | Beschreibung |
-|-------|----------|--------------|
-| **Leertaste** | 🚀 Speed Boost | Erhöht Ballgeschwindigkeit um 50% |
-| **P** | ⏸️ Pause | Pausiert/entpausiert das Spiel |
-| **S** | 💾 SVG Export | Speichert aktuelles SVG mit allen Trails |
+| Taste | Spieler | Funktion |
+|-------|---------|----------|
+| **A / D** | Spieler A | Paddle links / rechts drehen |
+| **← / →** | Spieler B | Paddle links / rechts drehen |
+| **Leertaste** | – | 🚀 Ballgeschwindigkeit +50% |
+| **P** | – | ⏸️ Pause ein/aus |
+| **S** | – | 💾 SVG mit Trails speichern |
 
-### **Button-Steuerung**
-- **Start-Button**: Spiel starten/neustarten oder Pause aufheben
+### **Gamepad-Steuerung**
+
+#### Ein Controller
+| Eingabe | Funktion |
+|---------|----------|
+| **Linker Stick** | Spieler A – Stick-Richtung = Paddle-Position (oben/rechts/unten/links) |
+| **Rechter Stick** | Spieler B – Stick-Richtung = Paddle-Position |
+| **Start** | Spiel starten / Pause ein\|aus / Neustarten |
+| **A** | 💾 SVG mit Trails speichern |
+
+#### Zwei Controller
+| Eingabe | Funktion |
+|---------|----------|
+| **Controller 1 – Linker Stick** | Spieler A |
+| **Controller 2 – Linker Stick** | Spieler B |
+| **Start (beliebiger Controller)** | Spiel starten / Pause / Neustarten |
+| **A (beliebiger Controller)** | 💾 SVG speichern |
+
+> **Stick-Logik**: Zeigt der Stick nach oben → Paddle ist oben; Stick losgelassen → Paddle bleibt an letzter Position stehen.
 
 ## 🏆 Spielregeln
 

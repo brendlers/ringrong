@@ -22,7 +22,7 @@ fetch('game.svg')
                 <div class="starter">Click on image to Start</div>
                 <div class="playerScoreB paddleB">5</div>
             </div>
-            <div class="info">Press S to save image - Press P to pause</div>
+            <div class="info">Mouse X/Y &nbsp;|&nbsp; A/D &amp; ←/→ &nbsp;|&nbsp; Gamepad: Stick=Paddle, Start=Play/Pause, A=Save &nbsp;|&nbsp; S=Save, P=Pause</div>
         `;
         
         container.innerHTML = titleHTML + svgContent + hudHTML;
@@ -37,6 +37,16 @@ function initializeGame() {
 }
 
 function startGameLogic() {
+
+// Shared paddle-angle state (written by all input sources)
+let angleA = 0;
+let angleB = 0;
+// Keyboard held-key state
+const keysHeld = {};
+// Gamepad Start-Button: vorherigen Zustand merken um "just pressed" zu erkennen
+let gpStartWasPressed = false;
+// Gamepad A-Button (buttons[0]): Bild speichern
+let gpAWasPressed = false;
 
 // Funktion zum Speichern des aktuellen SVG mit allen Trails
 function saveSVGWithTrails() {
@@ -187,17 +197,12 @@ function duplicateCurrentTrail() {
         target = svgCoords(evt);
         moveCursor();
         
-        // X/Y steuern die Startwinkel der Paddles
+        // Maus X → angleA, Maus Y → angleB (absolut setzen)
         const xNorm = Math.max(0, Math.min(1, (target.x - bbox.x) / bbox.width));
         const yNorm = Math.max(0, Math.min(1, (target.y - bbox.y) / bbox.height));
-        const startA = xNorm * 360;
-        const startB = yNorm * 360;
-        
-        // Paddle-Breiten aus Leben berechnen
-        const arcA = playerA * 10;
-        const arcB = playerB * 10;
-        drawPaddleWithEnds(50, 50, 45, startA, arcA, 'paddleA');
-        drawPaddleWithEnds(50, 50, 42, startB, arcB, 'paddleB');
+        angleA = xNorm * 360;
+        angleB = yNorm * 360;
+        // Paddles werden in der Game Loop gezeichnet
     }
     
     // Mouse Events
@@ -356,44 +361,84 @@ document.querySelector('.window svg').addEventListener('touchend', function(evt)
             return;
         }
         
-        // Paddelbreite anpassen: 10° * Leben
+        // Paddelbreite anpassen: 10° * Leben — Winkel kommen aus angleA/angleB
         const arcA = Math.max(0, playerA) * 10;
         const arcB = Math.max(0, playerB) * 10;
-        
-        // Aktuelle Startwinkel beibehalten
-        let startA = 0, startB = 0;
-        const dA = paddleA.getAttribute('d');
-        const dB = paddleB.getAttribute('d');
-        
-        if (dA) {
-            const coords = dA.match(/M ([\d.]+) ([\d.]+)/);
-            if (coords) {
-                const x = parseFloat(coords[1]);
-                const y = parseFloat(coords[2]);
-                startA = (Math.atan2(y - 50, x - 50) * 180 / Math.PI + 90 + 360) % 360;
-            }
-        }
-        if (dB) {
-            const coords = dB.match(/M ([\d.]+) ([\d.]+)/);
-            if (coords) {
-                const x = parseFloat(coords[1]);
-                const y = parseFloat(coords[2]);
-                startB = (Math.atan2(y - 50, x - 50) * 180 / Math.PI + 90 + 360) % 360;
-            }
-        }
-          drawPaddleWithEnds(50, 50, 45, startA, arcA, 'paddleA');
-        drawPaddleWithEnds(50, 50, 42, startB, arcB, 'paddleB');
+        drawPaddleWithEnds(50, 50, 45, angleA, arcA, 'paddleA');
+        drawPaddleWithEnds(50, 50, 42, angleB, arcB, 'paddleB');
     }
     updateScores();
 
     function updateBall() {
+        // --- Gamepad Start-Button: Spiel starten / pausieren / neustarten ---
+        const _gamepads = navigator.getGamepads ? navigator.getGamepads() : [];
+        const _gp = _gamepads[0] || _gamepads[1]; // erster verfügbarer Controller
+        if (_gp) {
+            const startPressed = _gp.buttons[9] && _gp.buttons[9].pressed;
+            if (startPressed && !gpStartWasPressed) {
+                // Flanke: Taste wurde gerade gedrückt
+                if (!gameRunning && !gameEnded) {
+                    handleStarterInteraction(); // Spiel starten
+                } else if (gameRunning) {
+                    gamePaused = !gamePaused;  // Pause umschalten
+                } else if (gameEnded) {
+                    handleStarterInteraction(); // Neustarten
+                }
+            }
+            gpStartWasPressed = startPressed;
+
+            // A-Taste (buttons[0]) → Bild speichern
+            const aPressed = _gp.buttons[0] && _gp.buttons[0].pressed;
+            if (aPressed && !gpAWasPressed) {
+                saveSVGWithTrails();
+            }
+            gpAWasPressed = aPressed;
+        }
+
         // Nur bewegen wenn Spiel läuft und nicht pausiert ist
         if (!gameRunning || gamePaused) {
             requestAnimationFrame(updateBall);
             return;
         }
-        
-        // Bewegung
+
+        // --- Tastatur: Paddle-Winkel anpassen (3°/Frame) ---
+        const keySpeed = 3;
+        if (keysHeld['KeyA'])      angleA = (angleA - keySpeed + 360) % 360;
+        if (keysHeld['KeyD'])      angleA = (angleA + keySpeed) % 360;
+        if (keysHeld['ArrowLeft']) angleB = (angleB - keySpeed + 360) % 360;
+        if (keysHeld['ArrowRight'])angleB = (angleB + keySpeed) % 360;
+
+        // --- Gamepad: Stick-Richtung direkt als Paddle-Winkel ---
+        // Formel: atan2(y, x) + 90° → oben=0°, rechts=90°, unten=180°, links=270°
+        // Stick losgelassen (innerhalb Dead Zone) → Paddle bleibt an letzter Position
+        function stickAngle(ax, ay) {
+            return (Math.atan2(ay, ax) * 180 / Math.PI + 90 + 360) % 360;
+        }
+        const gp0 = _gamepads[0];
+        const gp1 = _gamepads[1];
+        const deadZone = 0.15;
+        if (gp0) {
+            // Linker Stick (Achsen 0/1) → Spieler A
+            if (Math.hypot(gp0.axes[0], gp0.axes[1]) > deadZone) {
+                angleA = stickAngle(gp0.axes[0], gp0.axes[1]);
+            }
+            // Rechter Stick (Achsen 2/3) → Spieler B (nur wenn kein 2. Controller)
+            if (!gp1 && gp0.axes.length > 3 && Math.hypot(gp0.axes[2], gp0.axes[3]) > deadZone) {
+                angleB = stickAngle(gp0.axes[2], gp0.axes[3]);
+            }
+        }
+        if (gp1) {
+            // Zweiter Controller linker Stick → Spieler B
+            if (Math.hypot(gp1.axes[0], gp1.axes[1]) > deadZone) {
+                angleB = stickAngle(gp1.axes[0], gp1.axes[1]);
+            }
+        }
+
+        // --- Paddles mit aktuellen Winkeln neu zeichnen ---
+        drawPaddleWithEnds(50, 50, 45, angleA, playerA * 10, 'paddleA');
+        drawPaddleWithEnds(50, 50, 42, angleB, playerB * 10, 'paddleB');
+
+
         bx += vx;
         by += vy;
 
@@ -556,6 +601,15 @@ document.querySelector('.window svg').addEventListener('touchend', function(evt)
         if (e.code === 'KeyS') {
             saveSVGWithTrails();
         }
+        // Paddle-Steuerung per Tastatur: Zustand merken
+        if (['KeyA','KeyD','ArrowLeft','ArrowRight'].includes(e.code)) {
+            keysHeld[e.code] = true;
+            e.preventDefault(); // Pfeiltasten sollen nicht scrollen
+        }
+    });
+
+    document.addEventListener('keyup', (e) => {
+        delete keysHeld[e.code];
     });
 
     updateBall();
