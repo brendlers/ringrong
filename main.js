@@ -22,7 +22,11 @@ fetch('game.svg')
                 <div class="starter">Click on image to Start</div>
                 <div class="playerScoreB paddleB">5</div>
             </div>
-            <div class="info">Mouse X/Y &nbsp;|&nbsp; A/D &amp; ←/→ &nbsp;|&nbsp; Gamepad: Stick=Paddle, Start=Play/Pause, A=Save &nbsp;|&nbsp; S=Save, P=Pause</div>
+            <div class="info">
+                Mouse X/Y<br>
+                Gamepad: Stick(s)=Paddle &nbsp;·&nbsp; Start=Play/Pause &nbsp;·&nbsp; A=Save<br>
+                Keyboard: A/D &amp; ←/→ &nbsp;|&nbsp; S=Save &nbsp;·&nbsp; P=Pause
+            </div>
         `;
         
         container.innerHTML = titleHTML + svgContent + hudHTML;
